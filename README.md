@@ -1,6 +1,6 @@
 # Deeplabv3+ BDD100k/drivable_area implementation
 
-![Results](./result.png)
+![Results](./images/result.png)
 
 ### Introduction
 
