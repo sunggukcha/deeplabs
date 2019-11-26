@@ -14,15 +14,15 @@ from utils.lr_scheduler import LR_Scheduler
 from utils.saver import Saver
 from utils.summaries import TensorboardSummary
 from utils.metrics import Evaluator
-from modules import nn as NN
+#from modules import nn as NN
 from torchsummary import summary
 
 def gn(planes):
 	return nn.GroupNorm(16, planes)
 def syncbn(planes):
-	return NN.BatchNorm2d(planes)
+	return nn.BatchNorm2d(planes)
 def bn(planes):
-	return NN.BatchNorm2d(planes)
+	return nn.BatchNorm2d(planes)
 def syncabn(devices):
 	return False
 	def _syncabn(planes):
@@ -192,12 +192,14 @@ class Trainer(object):
             self.optimizer.step()
             train_loss += loss.item()
             tbar.set_description('Train loss: %.3f' % (train_loss / (i + 1)))
-            self.writer.add_scalar('train/total_loss_iter', loss.item(), i + num_img_tr * epoch)
+            #self.writer.add_scalar('train/total_loss_iter', loss.item(), i + num_img_tr * epoch)
 
             # Show 10 * 3 inference results each epoch
-            if i % (num_img_tr // 10) == 0:
+            '''
+            if i % (num_img_tr // 10) == 0 and False:
                 global_step = i + num_img_tr * epoch
                 self.summary.visualize_image(self.writer, self.args.dataset, image, target, output, global_step)
+            '''
 
         self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
         print('[Epoch: %d, numImages: %5d]' % (epoch, i * self.args.batch_size + image.data.shape[0]))
@@ -263,7 +265,6 @@ class Trainer(object):
 def main():
     parser = argparse.ArgumentParser(description="PyTorch DeeplabV3Plus Training")
     parser.add_argument('--backbone', type=str, default='resnet',
-                        choices=['resnet', 'xception', 'drn', 'mobilenet', 'wider_resnet', 'ibn'],
                         help='backbone name (default: resnet)')
     parser.add_argument('--out-stride', type=int, default=16,
                         help='network output stride (default: 8)')
@@ -278,6 +279,7 @@ def main():
                         help='base image size')
     parser.add_argument('--crop-size', type=int, default=513,
                         help='crop image size')
+    parser.add_argument('--ratio', type=float, default=1.0)
     parser.add_argument('--sync-bn', default=False, action='store_true',
                         help='whether to use sync bn (default: auto)')
     parser.add_argument('--freeze-bn', type=bool, default=False,
@@ -366,7 +368,7 @@ def main():
             'coco': 30,
             'cityscapes': 200,
             'pascal': 50,
-            'bdd': 50,
+            'bdd': 30,
         }
         args.epochs = epoches[args.dataset.lower()]
 
@@ -383,7 +385,7 @@ def main():
             'pascal': 0.007,
             'bdd': 0.01,
         }
-        args.lr = lrs[args.dataset.lower()] / (4 * len(args.gpu_ids)) * args.batch_size
+        args.lr = lrs[args.dataset.lower()] / 16 * args.batch_size
 
 
     if args.checkname is None:

@@ -12,7 +12,7 @@ import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
 
-from modules import nn as NN
+#from modules import nn as NN
 
 
 __all__ = ['ResNet', 'resnet50_ibn_a', 'resnet101_ibn_a',
@@ -153,9 +153,11 @@ class ResNet(nn.Module):
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 m.weight.data.normal_(0, math.sqrt(2. / n))
+                '''
             elif isinstance(m, NN.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
+                '''
             elif isinstance(m, nn.InstanceNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()

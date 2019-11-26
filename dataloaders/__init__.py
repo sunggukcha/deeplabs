@@ -1,4 +1,4 @@
-from dataloaders.datasets import cityscapes, coco, combine_dbs, pascal, sbd, bdd100k, nice
+from dataloaders.datasets import cityscapes, combine_dbs, pascal, sbd, bdd100k, nice #coco
 from torch.utils.data import DataLoader
 
 def make_data_loader(args, **kwargs):
@@ -27,7 +27,7 @@ def make_data_loader(args, **kwargs):
         test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False, **kwargs)
 
         return train_loader, val_loader, test_loader, num_class
-
+        '''
     elif args.dataset == 'coco':
         train_set = coco.COCOSegmentation(args, split='train')
         val_set = coco.COCOSegmentation(args, split='val')
@@ -36,7 +36,7 @@ def make_data_loader(args, **kwargs):
         val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False, **kwargs)
         test_loader = None
         return train_loader, val_loader, test_loader, num_class
-
+        '''
     elif args.dataset == 'bdd':
         train_set = bdd100k.BDD100kSegmentation(args, split='train')
         val_set = bdd100k.BDD100kSegmentation(args, split='val')

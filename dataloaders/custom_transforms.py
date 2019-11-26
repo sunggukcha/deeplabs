@@ -215,7 +215,24 @@ class RandomCrop(object):
                         'name' : sample['name']}
 
 		
-		
+class Rescale(object):
+    def __init__(self, ratio):
+        self.ratio = ratio
+    def __call__(self, sample):
+        img = sample['image']
+        mask = sample['label']
+
+        assert img.size == mask.size
+
+        shape = ( int(img.size[0] * self.ratio), int(img.size[1] * self.ratio) )
+        #print(img.size, shape)
+
+        img = img.resize(shape, Image.BILINEAR)
+        if 'label' in sample:
+            mask = sample['label']
+            mask = mask.resize(shape, Image.NEAREST)
+            return {'image': img, 'label': mask, 'name': sample['name']}
+        return {'image': img, 'name': sample['name']}
 
 class FixedResize(object):
     def __init__(self, size):

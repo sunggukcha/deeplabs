@@ -66,6 +66,8 @@ class DeepLab(nn.Module):
 
         if backbone == 'drn':
             output_stride = 8
+        if backbone.split('-')[0] == 'efficientnet':
+            output_stride = 32
 
         self.backbone = build_backbone(backbone, output_stride, Norm)
         self.aspp = build_aspp(backbone, output_stride, Norm)

@@ -1,4 +1,5 @@
 from modeling.backbone import resnet, xception, drn, mobilenet, wider_resnet, ibnnet
+from modeling.backbone.efficientnet_pytorch.model import EfficientNet as efficientnet
 import torch.nn as nn
 
 def Norm(planes):
@@ -22,5 +23,7 @@ def build_backbone(backbone, output_stride, BatchNorm, dec=True, abn=False):
         return ibnnet.resnet101_ibn_a(output_stride, BatchNorm)
     elif backbone == 'mobilenet':
         return mobilenet.MobileNetV2(output_stride, BatchNorm)
+    elif backbone.split('-')[0] == 'efficientnet':
+        return efficientnet.from_pretrained(backbone)
     else:
         raise NotImplementedError

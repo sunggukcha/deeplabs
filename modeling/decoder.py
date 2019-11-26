@@ -15,6 +15,8 @@ class Decoder(nn.Module):
             BatchNorm = Norm
         if backbone == 'resnet' or backbone =='resnet152' or backbone == 'drn' or backbone == 'ibn':
             low_level_inplanes = 256
+        elif backbone == 'efficientnet-b7':
+            low_level_inplanes = 48
         elif backbone == 'xception':
             low_level_inplanes = 128
         elif backbone == 'mobilenet':
