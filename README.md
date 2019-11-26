@@ -4,62 +4,21 @@
 
 ### Introduction
 
-This repository is merged with https://github.com/jfzhang95/pytorch-deeplab-xception and https://github.com/tamakoji/pytorch-syncbn, and is success of https://github.com/sunggukcha/deeplabv3plus-bdd100k-drivablearea. Please follow installation policies of the repositories above. 
+This repository is merged with https://github.com/jfzhang95/pytorch-deeplab-xception and is success of https://github.com/sunggukcha/deeplabv3plus-bdd100k-drivablearea. Please follow installation policies of the repositories above. 
 
 For BDD100k/drivable_area semantic segmentation, I added 
 
 1. bdd100k drivable area dataloader, and training/val/test scripts.
 2. prediction visualization for both color (visual result) and id (greyscale png file for submission).
 3. added Group Noramlization.
-4. added syncBN which is implemented by tamakoji@gmailc.om
-5. deeplabv3 which is without deeplabv3+ decoder, but with aspp only. 
-6. WRN as backbone is added (original code from mapillary@github)
-7. additional visualization that marks corrects, missed and wrong pixels.
-8. IBN-Net by github.com/XingangPan/IBN-Net/
+4. deeplabv3 which is without deeplabv3+ decoder, but with aspp only. 
+5. WRN as backbone is added (original code from mapillary@github)
+6. additional visualization that marks corrects, missed and wrong pixels.
+7. IBN-Net by github.com/XingangPan/IBN-Net/
+8. EfficientNet added which is implemented by https://github.com/lukemelas/EfficientNet-PyTorch.
+
 
 For more detail, please visit the repositories above.
-
-### Requirements
-Using python 0.4.1
-```Shell
-pip install -r requirements.txt
-```
-
-### Install and build
-In order to use syncBN, command following line somewhere,
-```Shell
-git clone https://github.com/tamakoji/pytorch-syncbn
-```
-then in your 'deeplabs' directory,
-```Shell
-ln -s /path/to/tamakoji/pytorch-syncbn/modules ./
-```
-Do not forget to build tamakoji's syncbn. For more details, please check up his repository.
-
-
-### How to train
-```Shell
-bash go_train.sh
-```
-If you want to specify cropsize, please check the code 'dataloaders/datasets/bdd100k.py'. Default is non-cropping input.
-
-
-### How to evaluate
-```Shell
-bash go_eval.sh
-```
-
-### How to inference
-For visual result,
-```Shell
-bash go_inference.sh
-```
-The code results out only 100 example, but you can easily change the code. 
-
-For submission, 
-```Shell
-bash go_submit.sh
-```
 
 ### Experiment & result
   
