@@ -31,7 +31,7 @@ class MBConvBlock(nn.Module):
         has_se (bool): Whether the block contains a Squeeze and Excitation layer.
     """
 
-    def __init__(self, block_args, global_params):
+    def __init__(self, block_args, global_params, Norm='bn'):
         super().__init__()
         self._block_args = block_args
         self._bn_mom = 1 - global_params.batch_norm_momentum
@@ -47,7 +47,10 @@ class MBConvBlock(nn.Module):
         oup = self._block_args.input_filters * self._block_args.expand_ratio  # number of output channels
         if self._block_args.expand_ratio != 1:
             self._expand_conv = Conv2d(in_channels=inp, out_channels=oup, kernel_size=1, bias=False)
-            self._bn0 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
+            if Norm=='bn':
+                self._bn0 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
+            elif Norm=='gn':
+                self._bn0 = nn.GroupNorm(16, num_channels=oup, eps=self._bn_eps)
 
         # Depthwise convolution phase
         k = self._block_args.kernel_size
@@ -55,8 +58,10 @@ class MBConvBlock(nn.Module):
         self._depthwise_conv = Conv2d(
             in_channels=oup, out_channels=oup, groups=oup,  # groups makes it depthwise
             kernel_size=k, stride=s, bias=False)
-        self._bn1 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
-
+        if Norm=='bn':
+            self._bn1 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
+        elif Norm=='gn':
+            self._bn1 = nn.GroupNorm(16, num_channels=oup, momentum=self._bn_mom, eps=self._bn_eps)
         # Squeeze and Excitation layer, if desired
         if self.has_se:
             num_squeezed_channels = max(1, int(self._block_args.input_filters * self._block_args.se_ratio))
@@ -66,7 +71,10 @@ class MBConvBlock(nn.Module):
         # Output phase
         final_oup = self._block_args.output_filters
         self._project_conv = Conv2d(in_channels=oup, out_channels=final_oup, kernel_size=1, bias=False)
-        self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
+        if Norm=='bn':
+            self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
+        elif Norm=='gn':
+            self._bn2 = nn.GroupNorm(16, num_channels=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
         self._swish = MemoryEfficientSwish()
 
     def forward(self, inputs, drop_connect_rate=None):
@@ -116,12 +124,17 @@ class EfficientNet(nn.Module):
 
     """
 
-    def __init__(self, blocks_args=None, global_params=None):
+    def __init__(self, model_name, blocks_args=None, global_params=None, Norm='bn'):
         super().__init__()
         assert isinstance(blocks_args, list), 'blocks_args should be a list'
         assert len(blocks_args) > 0, 'block args must be greater than 0'
+        self.model_name = model_name
         self._global_params = global_params
         self._blocks_args = blocks_args
+
+        if Norm != 'bn' and Norm != 'gn' and Norm != 'syncbn':
+            print(Norm, "normalization is not implemented")
+            raise NotImplementedError
 
         # Get static or dynamic convolution depending on image size
         Conv2d = get_same_padding_conv2d(image_size=global_params.image_size)
@@ -134,7 +147,10 @@ class EfficientNet(nn.Module):
         in_channels = 3  # rgb
         out_channels = round_filters(32, self._global_params)  # number of output channels
         self._conv_stem = Conv2d(in_channels, out_channels, kernel_size=3, stride=2, bias=False)
-        self._bn0 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
+        if Norm == 'bn':
+            self._bn0 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
+        elif Norm == 'gn':
+            self._bn0 = nn.GroupNorm(16, num_channels=out_channels, eps=bn_eps)
 
         # Build blocks
         self._blocks = nn.ModuleList([])
@@ -148,22 +164,26 @@ class EfficientNet(nn.Module):
             )
 
             # The first block needs to take care of stride and filter size increase.
-            self._blocks.append(MBConvBlock(block_args, self._global_params))
+            self._blocks.append(MBConvBlock(block_args, self._global_params, Norm=Norm))
             if block_args.num_repeat > 1:
                 block_args = block_args._replace(input_filters=block_args.output_filters, stride=1)
             for _ in range(block_args.num_repeat - 1):
-                self._blocks.append(MBConvBlock(block_args, self._global_params))
+                self._blocks.append(MBConvBlock(block_args, self._global_params, Norm=Norm))
 
         # Head
         in_channels = block_args.output_filters  # output of final block
         out_channels = round_filters(1280, self._global_params)
         self._conv_head = Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
-        self._bn1 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
+        if Norm == 'bn':
+            self._bn1 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
+        elif Norm == 'gn':
+            self._bn1 = nn.GroupNorm(16, num_channels=out_channels, eps=bn_eps)
+            
 
         # Final linear layer
-        self._avg_pooling = nn.AdaptiveAvgPool2d(1)
-        self._dropout = nn.Dropout(self._global_params.dropout_rate)
-        self._fc = nn.Linear(out_channels, self._global_params.num_classes)
+        #self._avg_pooling = nn.AdaptiveAvgPool2d(1)
+        #self._dropout = nn.Dropout(self._global_params.dropout_rate)
+        #self._fc = nn.Linear(out_channels, self._global_params.num_classes)
         self._swish = MemoryEfficientSwish()
 
     def set_swish(self, memory_efficient=True):
@@ -209,25 +229,25 @@ class EfficientNet(nn.Module):
         return x, low_level_feature
 
     @classmethod
-    def from_name(cls, model_name, override_params=None):
+    def from_name(cls, model_name, Norm='bn'):
         cls._check_model_name_is_valid(model_name)
-        blocks_args, global_params = get_model_params(model_name, override_params)
-        return cls(blocks_args, global_params)
-
+        blocks_args, global_params = get_model_params(model_name, None)
+        return cls(model_name, blocks_args, global_params, Norm)
+    '''
     @classmethod
-    def from_pretrained(cls, model_name, num_classes=1000, in_channels = 3):
-        model = cls.from_name(model_name, override_params={'num_classes': num_classes})
-        load_pretrained_weights(model, model_name, load_fc=(num_classes == 1000))
+    def from_pretrained(cls, model_name, in_channels=3, Norm='bn'):
+        model = cls.from_name(model_name=model_name, Norm=Norm)
+        load_pretrained_weights(model, model_name)
         if in_channels != 3:
             Conv2d = get_same_padding_conv2d(image_size = model._global_params.image_size)
             out_channels = round_filters(32, model._global_params)
             model._conv_stem = Conv2d(in_channels, out_channels, kernel_size=3, stride=2, bias=False)
         return model
-    
+    '''
     @classmethod
-    def from_pretrained(cls, model_name, num_classes=1000):
-        model = cls.from_name(model_name, override_params={'num_classes': num_classes})
-        load_pretrained_weights(model, model_name, load_fc=(num_classes == 1000))
+    def from_pretrained(cls, model_name, Norm='bn'):
+        model = cls.from_name(model_name=model_name, Norm=Norm)
+        load_pretrained_weights(model, model_name)
 
         return model
 

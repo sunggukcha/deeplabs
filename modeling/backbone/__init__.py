@@ -2,28 +2,35 @@ from modeling.backbone import resnet, xception, drn, mobilenet, wider_resnet, ib
 from modeling.backbone.efficientnet_pytorch.model import EfficientNet as efficientnet
 import torch.nn as nn
 
-def Norm(planes):
-	return nn.GroupNorm(32, planes)
+def gn(planes):
+	return nn.GroupNorm(16, planes)
+def bn(planes):
+        return nn.BatchNorm2d(planes)
+def syncbn(planes):
+        return nn.SyncBatchNorm(planes)
 
-def build_backbone(backbone, output_stride, BatchNorm, dec=True, abn=False):
-    if BatchNorm == None:
-        BatchNorm = Norm
+def build_backbone(backbone, output_stride, Norm, dec=True, abn=False):
+    if Norm == 'gn': norm=gn
+    elif Norm == 'bn': norm=bn
+    elif Norm == 'syncbn': norm=syncbn
+    else:
+        print (Norm, " <= normalization is not implemented")
 
     if backbone == 'resnet':
-        return resnet.ResNet101(output_stride, BatchNorm)
+        return resnet.ResNet101(output_stride, norm)
     elif backbone == 'resnet152':
-        return resnet.ResNet152(output_stride, BatchNorm)
+        return resnet.ResNet152(output_stride, norm)
     elif backbone == 'wider_resnet':
-        return wider_resnet.WiderResNet38(output_stride, BatchNorm, dec, abn)
+        return wider_resnet.WiderResNet38(output_stride, norm, dec, abn)
     elif backbone == 'xception':
-        return xception.AlignedXception(output_stride, BatchNorm)
+        return xception.AlignedXception(output_stride, norm)
     elif backbone == 'drn':
-        return drn.drn_d_38(BatchNorm)
+        return drn.drn_d_38(norm)
     elif backbone == 'ibn':
-        return ibnnet.resnet101_ibn_a(output_stride, BatchNorm)
+        return ibnnet.resnet101_ibn_a(output_stride, norm)
     elif backbone == 'mobilenet':
-        return mobilenet.MobileNetV2(output_stride, BatchNorm)
+        return mobilenet.MobileNetV2(output_stride, norm)
     elif backbone.split('-')[0] == 'efficientnet':
-        return efficientnet.from_pretrained(backbone)
+        return efficientnet.from_pretrained(model_name=backbone, Norm=Norm)
     else:
         raise NotImplementedError

@@ -68,10 +68,10 @@ class Trainer(object):
              model = DeepLab(num_classes=self.nclass,
                         backbone=args.backbone,
                         output_stride=args.out_stride,
-                        Norm=norm,
+                        Norm=args.norm,
                         freeze_bn=args.freeze_bn)
         elif self.args.model	=='deeplabv3':
-             model = DeepLabv3(Norm=norm,
+             model = DeepLabv3(Norm=self.args.norm,
 			backbone=args.backbone,
 			output_stride=args.out_stride,
 			num_classes=self.nclass,
@@ -192,6 +192,7 @@ class Trainer(object):
             self.optimizer.step()
             train_loss += loss.item()
             tbar.set_description('Train loss: %.3f' % (train_loss / (i + 1)))
+            continue
             #self.writer.add_scalar('train/total_loss_iter', loss.item(), i + num_img_tr * epoch)
 
             # Show 10 * 3 inference results each epoch

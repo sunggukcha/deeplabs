@@ -6,8 +6,14 @@ from modeling.aspp import build_aspp
 from modeling.decoder import build_decoder
 from modeling.backbone import build_backbone
 
-def Norm(planes):
-	return nn.GroupNorm(16, planes)
+def gn(planes):
+    return nn.GroupNorm(16, planes)
+
+def bn(planes):
+    return nn.BatchNorm2d(planes)
+
+def syncbn(planes):
+    return nn.SyncBatchNorm(planes)
 
 class DeepLabv3(nn.Module):
 	def __init__(self, Norm, backbone='resnet', output_stride=16, num_classes=3, freeze_bn=False, abn=False):
@@ -17,8 +23,12 @@ class DeepLabv3(nn.Module):
 		if backbone == 'drn':
 			output_stride = 8
 
+		if Norm == 'gn': norm=gn
+		elif Norm == 'bn': norm=bn
+		elif Norm == 'syncbn': norm=syncbn
+
 		self.backbone	= build_backbone(backbone, output_stride, Norm, dec=False, abn=abn)
-		self.aspp	= build_aspp(backbone, output_stride, Norm, dec=False)
+		self.aspp	= build_aspp(backbone, output_stride, norm, dec=False)
 		if freeze_bn:
 			self.freeze_bn()
 	def forward(self, input):
@@ -31,7 +41,9 @@ class DeepLabv3(nn.Module):
 			not implemented freezing for abn(s) and gn
 		'''
 		for m in self.modules():
-			if isinstance(m, SyncrhonizedBatchNorm2d):
+			if isinstance(m, nn.SyncBatchNorm):
+				m.eval()
+			elif isinstance(m, nn.GroupNorm):
 				m.eval()
 			elif isinstance(m, nn.BatchNorm2d):
 				m.eval()
@@ -69,10 +81,17 @@ class DeepLab(nn.Module):
         if backbone.split('-')[0] == 'efficientnet':
             output_stride = 32
 
+        if Norm == 'gn': norm=gn
+        elif Norm == 'bn': norm=bn
+        elif Norm == 'syncbn': norm=syncbn
+        else:
+            print(Norm, "normalization is not implemented")
+            raise NotImplementedError
+
         self.backbone = build_backbone(backbone, output_stride, Norm)
-        self.aspp = build_aspp(backbone, output_stride, Norm)
+        self.aspp = build_aspp(backbone, output_stride, norm)
         if self.deep_dec:
-            self.decoder = build_decoder(num_classes, backbone, Norm)
+            self.decoder = build_decoder(num_classes, backbone, norm)
 
         if freeze_bn:
             self.freeze_bn()

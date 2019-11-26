@@ -305,14 +305,15 @@ url_map = {
 }
 
 
-def load_pretrained_weights(model, model_name, load_fc=True):
+def load_pretrained_weights(model, model_name):
     """ Loads pretrained weights, and downloads if loading for the first time. """
     state_dict = model_zoo.load_url(url_map[model_name])
-    if load_fc:
-        model.load_state_dict(state_dict)
-    else:
-        state_dict.pop('_fc.weight')
-        state_dict.pop('_fc.bias')
-        res = model.load_state_dict(state_dict, strict=False)
-        assert set(res.missing_keys) == set(['_fc.weight', '_fc.bias']), 'issue loading pretrained weights'
+    model_dict = model.state_dict()
+    neo_dict = {}
+    for k, v in state_dict.items():
+        if k in model_dict:
+            neo_dict[k] = v
+    model_dict.update(neo_dict)
+    model.load_state_dict(model_dict)
+
     print('Loaded pretrained weights for {}'.format(model_name))
