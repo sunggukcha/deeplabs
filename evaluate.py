@@ -15,7 +15,6 @@ from utils.saver import Saver
 from utils.summaries import TensorboardSummary
 from utils.metrics import Evaluator
 from utils.visualize import Visualize as Vs
-from modules import nn as NN
 from torchsummary import summary
 
 def gn(planes):
@@ -23,7 +22,7 @@ def gn(planes):
 def syncbn(planes):
 	pass
 def bn(planes):
-	return NN.BatchNorm2d(planes)
+	return nn.BatchNorm2d(planes)
 def syncabn(devices):
 	return False
 	def _syncabn(planes):
@@ -62,10 +61,10 @@ class Trainer(object):
              model = DeepLab(num_classes=self.nclass,
                         backbone=args.backbone,
                         output_stride=args.out_stride,
-                        Norm=norm,
+                        Norm=args.norm,
                         freeze_bn=args.freeze_bn)
         elif self.args.model	=='deeplabv3':
-             model = DeepLabv3(Norm=norm,
+             model = DeepLabv3(Norm=args.norm,
 			backbone=args.backbone,
 			output_stride=args.out_stride,
 			num_classes=self.nclass,
