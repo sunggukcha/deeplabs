@@ -9,7 +9,11 @@ def bn(planes):
 def syncbn(planes):
         return nn.SyncBatchNorm(planes)
 
-def build_backbone(backbone, output_stride, Norm, dec=True, abn=False):
+def build_backbone(args):
+    Norm = args.norm
+    backbone = args.backbone
+    output_stride = args.output_stride
+
     if Norm == 'gn': norm=gn
     elif Norm == 'bn': norm=bn
     elif Norm == 'syncbn': norm=syncbn
@@ -31,6 +35,6 @@ def build_backbone(backbone, output_stride, Norm, dec=True, abn=False):
     elif backbone == 'mobilenet':
         return mobilenet.MobileNetV2(output_stride, norm)
     elif backbone.split('-')[0] == 'efficientnet':
-        return efficientnet.from_pretrained(model_name=backbone, Norm=Norm)
+        return efficientnet.from_pretrained(model_name=backbone, Norm=Norm, FPN=args.model=='fpn')
     else:
         raise NotImplementedError

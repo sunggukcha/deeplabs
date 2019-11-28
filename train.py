@@ -290,7 +290,7 @@ def main():
                         help='loss func type (default: ce)')
     # model
     parser.add_argument('--model', type=str, default='deeplabv3+',
-			choices=['deeplabv3+', 'deeplabv3'])
+			choices=['deeplabv3+', 'deeplabv3', 'fpn'])
     # Normalizations
     parser.add_argument('--norm', type=str, default='gn',
 			choices=['gn', 'bn', 'abn', 'ign'],

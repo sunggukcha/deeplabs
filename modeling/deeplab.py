@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
 from modeling.aspp import build_aspp
 from modeling.decoder import build_decoder
 from modeling.backbone import build_backbone
@@ -126,7 +125,7 @@ class DeepLab(nn.Module):
         modules = [self.backbone]
         for i in range(len(modules)):
             for m in modules[i].named_modules():
-                if isinstance(m[1], nn.Conv2d) or isinstance(m[1], SynchronizedBatchNorm2d) \
+                if isinstance(m[1], nn.Conv2d) or isinstance(m[1], nn.GroupNorm) \
                         or isinstance(m[1], nn.BatchNorm2d):
                     for p in m[1].parameters():
                         if p.requires_grad:
@@ -136,7 +135,7 @@ class DeepLab(nn.Module):
         modules = [self.aspp, self.decoder]
         for i in range(len(modules)):
             for m in modules[i].named_modules():
-                if isinstance(m[1], nn.Conv2d) or isinstance(m[1], SynchronizedBatchNorm2d) \
+                if isinstance(m[1], nn.Conv2d) or isinstance(m[1], nn.GroupNorm) \
                         or isinstance(m[1], nn.BatchNorm2d):
                     for p in m[1].parameters():
                         if p.requires_grad:

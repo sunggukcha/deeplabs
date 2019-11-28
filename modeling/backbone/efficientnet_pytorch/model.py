@@ -124,19 +124,24 @@ class EfficientNet(nn.Module):
 
     """
 
-    def __init__(self, model_name, blocks_args=None, global_params=None, Norm='bn'):
+    def __init__(self, model_name, blocks_args=None, global_params=None, Norm='bn', FPN=False):
         super().__init__()
         assert isinstance(blocks_args, list), 'blocks_args should be a list'
         assert len(blocks_args) > 0, 'block args must be greater than 0'
         self.model_name = model_name
+        self.FPN = FPN
         if self.model_name == 'efficientnet-b7':
             self.idx = 10
+            self.idxs = [10, 17, 37]
         elif self.model_name == 'efficientnet-b6':
             self.idx = 8
+            self.idxs = [8, 14, 30]
         elif self.model_name == 'efficientnet-b5':
             self.idx = 7
+            self.idxs = [7, 12, 26]
         elif self.model_name == 'efficientnet-b4':
             self.idx = 5
+            self.idxs = [5, 9, 21]
         else:
             print("Model {} is not supported".format(self.model_name))
             raise NotImplementedError
@@ -206,6 +211,7 @@ class EfficientNet(nn.Module):
 
     def extract_features(self, inputs):
         """ Returns output of the final convolution layer """
+        features = []
         low_level_feat = None
 
         # Stem
@@ -217,20 +223,26 @@ class EfficientNet(nn.Module):
             if drop_connect_rate:
                 drop_connect_rate *= float(idx) / len(self._blocks)
             x = block(x, drop_connect_rate=drop_connect_rate)
-            if idx == self.idx: low_level_feat = x
+            if self.FPN:
+                if idx in self.idxs:
+                    features.append(x)
+            elif idx == self.idx: low_level_feat = x
             #print(idx, x.shape)
 
         # Head
         x = self._swish(self._bn1(self._conv_head(x)))
         #print("last", x.shape)
 
-        return x, low_level_feat
+        if not self.FPN: return x, low_level_feat
+        else:
+            features.append(x)
+            return features
 
     def forward(self, inputs):
         """ Calls extract_features to extract features, applies final linear layer, and returns logits. """
-        bs = inputs.size(0)
+        # bs = inputs.size(0)
         # Convolution layers
-        x, low_level_feature = self.extract_features(inputs)
+        # x, low_level_feature = self.extract_features(inputs)
 
         '''
         # Pooling and final linear layer
@@ -239,13 +251,13 @@ class EfficientNet(nn.Module):
         x = self._dropout(x)
         x = self._fc(x)
         '''
-        return x, low_level_feature
+        return self.extract_features(inputs)
 
     @classmethod
-    def from_name(cls, model_name, Norm='bn'):
+    def from_name(cls, model_name, Norm='bn', FPN=False):
         cls._check_model_name_is_valid(model_name)
         blocks_args, global_params = get_model_params(model_name, None)
-        return cls(model_name, blocks_args, global_params, Norm)
+        return cls(model_name, blocks_args, global_params, Norm, FPN)
     '''
     @classmethod
     def from_pretrained(cls, model_name, in_channels=3, Norm='bn'):
@@ -258,8 +270,8 @@ class EfficientNet(nn.Module):
         return model
     '''
     @classmethod
-    def from_pretrained(cls, model_name, Norm='bn'):
-        model = cls.from_name(model_name=model_name, Norm=Norm)
+    def from_pretrained(cls, model_name, Norm='bn', FPN=False):
+        model = cls.from_name(model_name=model_name, Norm=Norm, FPN=FPN)
         load_pretrained_weights(model, model_name)
 
         return model
