@@ -16,6 +16,7 @@ For BDD100k/drivable_area semantic segmentation, I added
 6. additional visualization that marks corrects, missed and wrong pixels.
 7. IBN-Net by github.com/XingangPan/IBN-Net/
 8. EfficientNet added which is implemented by https://github.com/lukemelas/EfficientNet-PyTorch.
+9. Feature Pyramid Networks(FPNs) for semantic segmentation added (version: Panoptic Feature Pyramid Networks).
 
 
 For more detail, please visit the repositories above.
