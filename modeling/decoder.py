@@ -17,6 +17,10 @@ class Decoder(nn.Module):
             low_level_inplanes = 256
         elif backbone == 'efficientnet-b7':
             low_level_inplanes = 48
+        elif backbone == 'efficientnet-b6' or backbone == 'efficientnet-b5':
+            low_level_inplanes = 40
+        elif backbone == 'efficientnet-b4':
+            low_level_inplanes = 32
         elif backbone == 'xception':
             low_level_inplanes = 128
         elif backbone == 'mobilenet':

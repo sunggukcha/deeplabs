@@ -131,8 +131,9 @@ class Trainer(object):
             preds = np.argmax(preds, axis=1)
             if __image:
                 images  = images.cpu().numpy()
-            self.vs.predict_id(preds, names, self.args.save_dir)
-            if self.args.color:
+            if not self.args.color:
+                self.vs.predict_id(preds, names, self.args.save_dir)
+            else:
                 self.vs.predict_color(preds, images, names, self.args.save_dir)
 
 

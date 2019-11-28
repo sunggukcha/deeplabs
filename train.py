@@ -349,6 +349,9 @@ def main():
     parser.add_argument('--test', action='store_true', default=False,
 			help='do not generate exp, nor train.')
 
+    # additional option
+    parser.add_argument('--labels', type=str, default=None)
+
     args = parser.parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     if args.cuda:

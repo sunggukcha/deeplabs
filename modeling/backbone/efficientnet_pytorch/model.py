@@ -61,7 +61,7 @@ class MBConvBlock(nn.Module):
         if Norm=='bn':
             self._bn1 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
         elif Norm=='gn':
-            self._bn1 = nn.GroupNorm(16, num_channels=oup, momentum=self._bn_mom, eps=self._bn_eps)
+            self._bn1 = nn.GroupNorm(16, num_channels=oup, eps=self._bn_eps)
         # Squeeze and Excitation layer, if desired
         if self.has_se:
             num_squeezed_channels = max(1, int(self._block_args.input_filters * self._block_args.se_ratio))
@@ -74,7 +74,7 @@ class MBConvBlock(nn.Module):
         if Norm=='bn':
             self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
         elif Norm=='gn':
-            self._bn2 = nn.GroupNorm(16, num_channels=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
+            self._bn2 = nn.GroupNorm(16, num_channels=final_oup, eps=self._bn_eps)
         self._swish = MemoryEfficientSwish()
 
     def forward(self, inputs, drop_connect_rate=None):
@@ -129,6 +129,17 @@ class EfficientNet(nn.Module):
         assert isinstance(blocks_args, list), 'blocks_args should be a list'
         assert len(blocks_args) > 0, 'block args must be greater than 0'
         self.model_name = model_name
+        if self.model_name == 'efficientnet-b7':
+            self.idx = 10
+        elif self.model_name == 'efficientnet-b6':
+            self.idx = 8
+        elif self.model_name == 'efficientnet-b5':
+            self.idx = 7
+        elif self.model_name == 'efficientnet-b4':
+            self.idx = 5
+        else:
+            print("Model {} is not supported".format(self.model_name))
+            raise NotImplementedError
         self._global_params = global_params
         self._blocks_args = blocks_args
 
@@ -206,10 +217,12 @@ class EfficientNet(nn.Module):
             if drop_connect_rate:
                 drop_connect_rate *= float(idx) / len(self._blocks)
             x = block(x, drop_connect_rate=drop_connect_rate)
-            if idx == 10: low_level_feat = x
+            if idx == self.idx: low_level_feat = x
+            #print(idx, x.shape)
 
         # Head
         x = self._swish(self._bn1(self._conv_head(x)))
+        #print("last", x.shape)
 
         return x, low_level_feat
 

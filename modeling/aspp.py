@@ -53,6 +53,12 @@ class ASPP(nn.Module):
             inplanes = 320
         elif backbone == 'wider_resnet':
             inplanes = 4096
+        elif backbone == 'efficientnet-b4':
+            inplanes = 1792
+        elif backbone == 'efficientnet-b5':
+            inplanes = 2048
+        elif backbone == 'efficientnet-b6':
+            inplanes = 2304
         elif backbone == 'efficientnet-b7':
             inplanes = 2560
         else:
