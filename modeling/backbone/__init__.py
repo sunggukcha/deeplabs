@@ -12,7 +12,7 @@ def syncbn(planes):
 def build_backbone(args):
     Norm = args.norm
     backbone = args.backbone
-    output_stride = args.output_stride
+    output_stride = args.out_stride
 
     if Norm == 'gn': norm=gn
     elif Norm == 'bn': norm=bn

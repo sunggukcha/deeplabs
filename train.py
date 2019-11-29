@@ -8,6 +8,7 @@ from mypath import Path
 from dataloaders import make_data_loader
 from modeling.sync_batchnorm.replicate import patch_replication_callback
 from modeling.deeplab import *
+from modeling.fpn import FPN
 from utils.loss import SegmentationLosses
 from utils.calculate_weights import calculate_weigths_labels
 from utils.lr_scheduler import LR_Scheduler
@@ -76,6 +77,11 @@ class Trainer(object):
 			output_stride=args.out_stride,
 			num_classes=self.nclass,
 			freeze_bn=args.freeze_bn)
+        elif self.args.model == 'fpn':
+            model = FPN (
+                args=args,
+                num_classes=self.nclass
+            )
         '''
         model.cuda()
         summary(model, input_size=(3, 720, 1280))
@@ -393,7 +399,7 @@ def main():
 
 
     if args.checkname is None:
-        args.checkname = 'deeplab-'+str(args.backbone)
+        args.checkname = args.model+'-'+str(args.backbone)
     print(args)
     torch.manual_seed(args.seed)
     trainer = Trainer(args)

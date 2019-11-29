@@ -70,7 +70,7 @@ class DeepLabv3(nn.Module):
 
 class DeepLab(nn.Module):
     def __init__(self, Norm, backbone='resnet', output_stride=16, num_classes=21,
-                 freeze_bn=False, abn=False, deep_dec=True):
+                 freeze_bn=False, abn=False, deep_dec=True, args=None):
         super(DeepLab, self).__init__()
         self.abn	= abn
         self.deep_dec	= deep_dec # if True, it deeplabv3+, otherwise, deeplabv3
@@ -87,7 +87,7 @@ class DeepLab(nn.Module):
             print(Norm, "normalization is not implemented")
             raise NotImplementedError
 
-        self.backbone = build_backbone(backbone, output_stride, Norm)
+        self.backbone = build_backbone(args)
         self.aspp = build_aspp(backbone, output_stride, norm)
         if self.deep_dec:
             self.decoder = build_decoder(num_classes, backbone, norm)

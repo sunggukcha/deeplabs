@@ -38,6 +38,8 @@ def conv_gn_relu(inplanes, outplanes):
 class _FPN(nn.Module):
     def __init__(self, args, num_classes):
         super(_FPN, self).__init__()
+
+        self.resolution = (720, 1280)
         
         if args.norm == 'gn': norm=gn
         elif args.norm == 'bn': norm=bn
@@ -94,7 +96,10 @@ class _FPN(nn.Module):
 
     def _upsample(self, x, ratio=2):
         _, _, H, W = x.size()
-        return F.interpolate(x, size=(H*ratio, W*ratio), mode='bilinear', align_corners=True)
+        H *= ratio
+        W *= ratio
+        if H == 44: H = 45
+        return F.interpolate(x, size=(H, W), mode='bilinear', align_corners=True)
 
     def _upsample_add(self, x, y):
         _, _, H, W = y.size()

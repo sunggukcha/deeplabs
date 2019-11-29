@@ -8,6 +8,7 @@ from mypath import Path
 from dataloaders import make_data_loader
 from modeling.sync_batchnorm.replicate import patch_replication_callback
 from modeling.deeplab import *
+from modeling.fpn import FPN
 from utils.loss import SegmentationLosses
 from utils.calculate_weights import calculate_weigths_labels
 from utils.lr_scheduler import LR_Scheduler
@@ -62,13 +63,19 @@ class Trainer(object):
                         backbone=args.backbone,
                         output_stride=args.out_stride,
                         Norm=args.norm,
-                        freeze_bn=args.freeze_bn)
+                        freeze_bn=args.freeze_bn,
+                        args=args)
         elif self.args.model	=='deeplabv3':
              model = DeepLabv3(Norm=args.norm,
 			backbone=args.backbone,
 			output_stride=args.out_stride,
 			num_classes=self.nclass,
 			freeze_bn=args.freeze_bn)
+        elif self.args.model == 'fpn':
+            model = FPN(
+                args=args,
+                num_classes=self.nclass
+            )
 
         # Define Criterion
         # whether to use class balanced weights
