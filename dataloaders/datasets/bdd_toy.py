@@ -10,23 +10,31 @@ from dataloaders import custom_transforms as tr
 class BDD100kSegmentation(data.Dataset):
     '''
 	BDD100k Drivable Area segmentation
+        Toy example
+        uses 1/10 training images(7k) and whole test images(20k)
     '''
     NUM_CLASSES = 3
 
     def __init__(self, args, root=Path.db_root_dir('bdd'), split="train"):
+
 
         self.root = root
         self.split = split
         self.args = args
         self.files = {}
 
-        self.images_base = os.path.join(self.root, 'images', '100k', self.split)
-        self.annotations_base = os.path.join(self.root, 'drivable_maps', 'labels', self.split)
 
-        self.files[split] = self.recursive_glob(rootdir=self.images_base, suffix='.jpg')
 
-        # REDUCING DATASET
-        if split != 'test': self.files[split] = self.files[split][:len(self.files[split])//10]
+        if split=='train' or split=='test':
+            self.annotations_base = os.path.join(self.args.labels)
+
+            self.images_base = os.path.join(self.root, 'images', '100k', 'train')
+            self.files[split] = self.recursive_glob(rootdir=self.images_base, suffix='.jpg')
+            self.files[split] = self.files[split][:len(self.files[split])//10]
+            self.images_base = os.path.join(self.root, 'images', '100k', 'test')
+            self.files[split] += self.recursive_glob(rootdir=self.images_base, suffix='.jpg')
+        else:
+            self.files[split] = []
 
         self.void_classes = [] #[0, 1, 2, 3, 4, 5, 6, 9, 10, 14, 15, 16, 18, 29, 30, -1]
         self.valid_classes = [0, 1, 2] #[7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33]
@@ -47,7 +55,7 @@ class BDD100kSegmentation(data.Dataset):
 
         img_path = self.files[self.split][index].rstrip()
         lbl_path = os.path.join(self.annotations_base,
-                                os.path.basename(img_path)[:17] + '_drivable_id.png')
+                                os.path.basename(img_path)[:17] + '.png')
 
         _img = Image.open(img_path).convert('RGB')
         _name = os.path.basename(img_path)[:17] + '.png'

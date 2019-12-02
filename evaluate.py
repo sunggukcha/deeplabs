@@ -35,7 +35,7 @@ def abn(planes):
 class Trainer(object):
     def __init__(self, args):
         self.args = args
-        self.vs = Vs()
+        self.vs = Vs(args.dataset)
         
         # Define Dataloader
         kwargs = {'num_workers': args.workers, 'pin_memory': True}
@@ -194,7 +194,7 @@ def main():
     parser.add_argument('--out-stride', type=int, default=16,
                         help='network output stride (default: 8)')
     parser.add_argument('--dataset', type=str, default='pascal',
-                        choices=['pascal', 'coco', 'cityscapes', 'bdd'],
+                        #choices=['pascal', 'coco', 'cityscapes', 'bdd'],
                         help='dataset name (default: pascal)')
     parser.add_argument('--use-sbd', action='store_true', default=False,
                         help='whether to use SBD dataset (default: True)')
@@ -257,6 +257,7 @@ def main():
     parser.add_argument('--ft', action='store_true', default=False,
                         help='finetuning on a different dataset')
     # evaluation option
+    parser.add_argument('--labels', type=str, default=None)
     parser.add_argument('--test', action='store_true', default=False,
 			help='if true, inference test set')
     parser.add_argument('--eval-interval', type=int, default=1,

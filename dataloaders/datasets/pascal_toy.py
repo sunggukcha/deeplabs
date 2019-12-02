@@ -26,8 +26,13 @@ class VOCSegmentation(Dataset):
         super().__init__()
         self._base_dir = base_dir
         self._image_dir = os.path.join(self._base_dir, 'JPEGImages')
-        if split=='val' and not args.labels==None: self._cat_dir = os.path.join(args.labels)
-        else: self._cat_dir = os.path.join(self._base_dir, 'SegmentationClass')
+        self._cat_dir = {}
+        if not args.labels == None:
+            self._cat_dir['val'] = os.path.join(args.labels)
+        else:
+            self._cat_dir['val'] = os.path.join(self._base_dir, 'SegmentationClass')
+        self._cat_dir['train'] = os.path.join(self._base_dir, 'SegmentationClass')
+
 
         if isinstance(split, str):
             self.split = [split]
@@ -45,19 +50,33 @@ class VOCSegmentation(Dataset):
         self.names = []
 
         for splt in self.split:
-            with open(os.path.join(os.path.join(_splits_dir, splt + '.txt')), "r") as f:
-                lines = f.read().splitlines()
+            if splt == 'train':
+                with open(os.path.join(os.path.join(_splits_dir, splt + '.txt')), "r") as f:
+                    lines = f.read().splitlines()
 
-            for ii, line in enumerate(lines):
-                _image = os.path.join(self._image_dir, line + ".jpg")
-                _cat = os.path.join(self._cat_dir, line + ".png")
-                _name = line + '.png'
-                assert os.path.isfile(_image)
-                assert os.path.isfile(_cat)
-                self.im_ids.append(line)
-                self.images.append(_image)
-                self.categories.append(_cat)
-                self.names.append(_name)
+                for ii, line in enumerate(lines):
+                    _image = os.path.join(self._image_dir, line + ".jpg")
+                    _cat = os.path.join(self._cat_dir[splt], line + ".png")
+                    _name = line + ".png"
+                    assert os.path.isfile(_image)
+                    assert os.path.isfile(_cat)
+                    self.im_ids.append(line)
+                    self.images.append(_image)
+                    self.categories.append(_cat)
+                    self.names.append(_name)
+            if splt == 'val' or splt == 'train':
+                with open(os.path.join(os.path.join(_splits_dir, 'val' + '.txt')), "r") as f:
+                    lines = f.read().splitlines()
+                for ii, line in enumerate(lines):
+                    _image = os.path.join(self._image_dir, line + ".jpg")
+                    _cat = os.path.join(self._cat_dir['val'], line + ".png")
+                    _name = line + ".png"
+                    assert os.path.isfile(_image)
+                    assert os.path.isfile(_cat)
+                    self.im_ids.append(line)
+                    self.images.append(_image)
+                    self.categories.append(_cat)
+                    self.names.append(_name)
 
         assert (len(self.images) == len(self.categories))
 

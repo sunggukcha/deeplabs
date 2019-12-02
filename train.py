@@ -276,15 +276,15 @@ def main():
     parser.add_argument('--out-stride', type=int, default=16,
                         help='network output stride (default: 8)')
     parser.add_argument('--dataset', type=str, default='pascal',
-                        choices=['pascal', 'coco', 'cityscapes', 'bdd'],
+                        #choices=['pascal', 'coco', 'cityscapes', 'bdd'],
                         help='dataset name (default: pascal)')
     parser.add_argument('--use-sbd', action='store_true', default=False,
                         help='whether to use SBD dataset (default: True)')
     parser.add_argument('--workers', type=int, default=4,
                         metavar='N', help='dataloader threads')
-    parser.add_argument('--base-size', type=int, default=513,
+    parser.add_argument('--base-size', type=int, default=512,
                         help='base image size')
-    parser.add_argument('--crop-size', type=int, default=513,
+    parser.add_argument('--crop-size', type=int, default=512,
                         help='crop image size')
     parser.add_argument('--ratio', type=float, default=1.0)
     parser.add_argument('--sync-bn', default=False, action='store_true',
@@ -378,6 +378,8 @@ def main():
             'coco': 30,
             'cityscapes': 200,
             'pascal': 50,
+            'pascal_toy': 50,
+            'bdd_toy': 30,
             'bdd': 30,
         }
         args.epochs = epoches[args.dataset.lower()]
@@ -393,6 +395,8 @@ def main():
             'coco': 0.1,
             'cityscapes': 0.01,
             'pascal': 0.007,
+            'pascal_toy': 0.007,
+            'bdd_toy': 0.001,
             'bdd': 0.01,
         }
         args.lr = lrs[args.dataset.lower()] / 16 * args.batch_size

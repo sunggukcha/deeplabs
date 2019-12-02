@@ -47,9 +47,9 @@ class MBConvBlock(nn.Module):
         oup = self._block_args.input_filters * self._block_args.expand_ratio  # number of output channels
         if self._block_args.expand_ratio != 1:
             self._expand_conv = Conv2d(in_channels=inp, out_channels=oup, kernel_size=1, bias=False)
-            if Norm=='bn':
-                self._bn0 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
-            elif Norm=='gn':
+            #if Norm=='bn':
+            self._bn0 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
+            if Norm=='gn':
                 self._bn0 = nn.GroupNorm(16, num_channels=oup, eps=self._bn_eps)
 
         # Depthwise convolution phase
@@ -58,9 +58,9 @@ class MBConvBlock(nn.Module):
         self._depthwise_conv = Conv2d(
             in_channels=oup, out_channels=oup, groups=oup,  # groups makes it depthwise
             kernel_size=k, stride=s, bias=False)
-        if Norm=='bn':
-            self._bn1 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
-        elif Norm=='gn':
+        #if Norm=='bn':
+        self._bn1 = nn.BatchNorm2d(num_features=oup, momentum=self._bn_mom, eps=self._bn_eps)
+        if Norm=='gn':
             self._bn1 = nn.GroupNorm(16, num_channels=oup, eps=self._bn_eps)
         # Squeeze and Excitation layer, if desired
         if self.has_se:
@@ -71,9 +71,9 @@ class MBConvBlock(nn.Module):
         # Output phase
         final_oup = self._block_args.output_filters
         self._project_conv = Conv2d(in_channels=oup, out_channels=final_oup, kernel_size=1, bias=False)
-        if Norm=='bn':
-            self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
-        elif Norm=='gn':
+        #if Norm=='bn':
+        self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
+        if Norm=='gn':
             self._bn2 = nn.GroupNorm(16, num_channels=final_oup, eps=self._bn_eps)
         self._swish = MemoryEfficientSwish()
 
@@ -163,9 +163,9 @@ class EfficientNet(nn.Module):
         in_channels = 3  # rgb
         out_channels = round_filters(32, self._global_params)  # number of output channels
         self._conv_stem = Conv2d(in_channels, out_channels, kernel_size=3, stride=2, bias=False)
-        if Norm == 'bn':
-            self._bn0 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
-        elif Norm == 'gn':
+        #if Norm == 'bn':
+        self._bn0 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
+        if Norm == 'gn':
             self._bn0 = nn.GroupNorm(16, num_channels=out_channels, eps=bn_eps)
 
         # Build blocks
@@ -190,9 +190,9 @@ class EfficientNet(nn.Module):
         in_channels = block_args.output_filters  # output of final block
         out_channels = round_filters(1280, self._global_params)
         self._conv_head = Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
-        if Norm == 'bn':
-            self._bn1 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
-        elif Norm == 'gn':
+        #if Norm == 'bn':
+        self._bn1 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
+        if Norm == 'gn':
             self._bn1 = nn.GroupNorm(16, num_channels=out_channels, eps=bn_eps)
             
 

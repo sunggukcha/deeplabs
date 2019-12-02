@@ -85,16 +85,19 @@ class _FPN(nn.Module):
         p3 = self._upsample_add(p4, self.f3(f3))
         p2 = self._upsample_add(p3, self.f2(f2))
 
-        p5 = self.semantic_branch( self._upsample( self.s53( self._upsample( self.s52( self._upsample( self.s51( p5 ) ) ) ) ) ) )
-        p4 = self.semantic_branch( self._upsample( self.s42( self._upsample( self.s41( p4 ) ) ) ) )
-        p3 = self.semantic_branch( self._upsample( self.s3( p3 ) ) )
+        _, _, H, W = p2.size()
+
+        p5 = self.semantic_branch( self._upsample( self.s53( self._upsample( self.s52( self._upsample( self.s51( p5 ), H//4, W//4 ) ), H//2, W//2 ) ), H, W ) )
+        p4 = self.semantic_branch( self._upsample( self.s42( self._upsample( self.s41( p4 ), H//2, W//2 ) ), H, W) )
+        p3 = self.semantic_branch( self._upsample( self.s3( p3 ), H, W ) )
         p2 = self.semantic_branch( self.s2( p2 ) )
 
-        x = self._upsample(p5 + p4 + p3 + p2, ratio=4)
+        x = self._upsample(p5 + p4 + p3 + p2, H*4, W*4)
         return x
         
 
-    def _upsample(self, x, ratio=2):
+    def _upsample(self, x, H, W):
+        return F.interpolate(x, size=(H, W), mode='bilinear', align_corners=True)
         _, _, H, W = x.size()
         H *= ratio
         W *= ratio

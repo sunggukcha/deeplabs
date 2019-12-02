@@ -200,13 +200,13 @@ class RandomCrop2(object):
 class RandomCrop(object):
 	def __init__(self, crop_size):
 		self.crop_size = crop_size
-		assert self.crop_size == 720
 
 	def __call__(self, sample):
 		img = sample['image']
 		w, h = img.size
-		x = random.randint(0, w - self.crop_size)
-		img = img.crop( (x, 0, x + self.crop_size, 720) )
+		x = max(0, random.randint(0, w - self.crop_size))
+		y = max(0, random.randint(0, h - self.crop_size))
+		img = img.crop( (x, y, x + self.crop_size, y + self.crop_size) )
 		if 'label' in sample:
 			label   = sample['label']
 			label = label.crop( (x, 0, x + self.crop_size, 720) )
