@@ -69,28 +69,30 @@ class DeepLabv3(nn.Module):
 
 
 class DeepLab(nn.Module):
-    def __init__(self, Norm, backbone='resnet', output_stride=16, num_classes=21,
-                 freeze_bn=False, abn=False, deep_dec=True, args=None):
+    def __init__(self, args, num_classes=21,
+                 freeze_bn=False, abn=False, deep_dec=True):
         super(DeepLab, self).__init__()
+        self.args = args
         self.abn	= abn
         self.deep_dec	= deep_dec # if True, it deeplabv3+, otherwise, deeplabv3
+        output_stride = args.out_stride
 
-        if backbone == 'drn':
+        if args.backbone == 'drn':
             output_stride = 8
-        if backbone.split('-')[0] == 'efficientnet':
+        if args.backbone.split('-')[0] == 'efficientnet':
             output_stride = 32
 
-        if Norm == 'gn': norm=gn
-        elif Norm == 'bn': norm=bn
-        elif Norm == 'syncbn': norm=syncbn
+        if args.norm == 'gn': norm=gn
+        elif args.norm == 'bn': norm=bn
+        elif args.norm == 'syncbn': norm=syncbn
         else:
-            print(Norm, "normalization is not implemented")
+            print(args.norm, "normalization is not implemented")
             raise NotImplementedError
 
         self.backbone = build_backbone(args)
-        self.aspp = build_aspp(backbone, output_stride, norm)
+        self.aspp = build_aspp(args.backbone, args.out_stride, norm)
         if self.deep_dec:
-            self.decoder = build_decoder(num_classes, backbone, norm)
+            self.decoder = build_decoder(num_classes, args.backbone, norm)
 
         if freeze_bn:
             self.freeze_bn()

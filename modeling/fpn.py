@@ -74,7 +74,7 @@ class _FPN(nn.Module):
         self.semantic_branch = nn.Conv2d(128, num_classes, kernel_size=1, stride=1, padding=0)
 
 
-    def forward(self, features):
+    def forward(self, features, _shape):
         f5 = features[3]
         f4 = features[2]
         f3 = features[1]
@@ -92,7 +92,7 @@ class _FPN(nn.Module):
         p3 = self.semantic_branch( self._upsample( self.s3( p3 ), H, W ) )
         p2 = self.semantic_branch( self.s2( p2 ) )
 
-        x = self._upsample(p5 + p4 + p3 + p2, H*4, W*4)
+        x = self._upsample(p5 + p4 + p3 + p2, _shape[-2], _shape[-1])
         return x
         
 
@@ -117,7 +117,7 @@ class FPN(nn.Module):
 
     def forward(self, input):
         features = self.backbone(input)
-        x = self.fpn(features)
+        x = self.fpn(features, input.size())
         return x
 
     def get_1x_lr_params(self):

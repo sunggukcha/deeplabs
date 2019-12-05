@@ -59,12 +59,9 @@ class Trainer(object):
 
         # Define network
         if self.args.model	=='deeplabv3+':
-             model = DeepLab(num_classes=self.nclass,
-                        backbone=args.backbone,
-                        output_stride=args.out_stride,
-                        Norm=args.norm,
-                        freeze_bn=args.freeze_bn,
-                        args=args)
+             model = DeepLab(args=self.args,
+                        num_classes=self.nclass,
+                        freeze_bn=args.freeze_bn)
         elif self.args.model	=='deeplabv3':
              model = DeepLabv3(Norm=args.norm,
 			backbone=args.backbone,
