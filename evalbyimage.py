@@ -80,6 +80,7 @@ def get_args():
     # Dataloader specific
     parser.add_argument('--preds', type=str)
     parser.add_argument('--labels', type=str)
+    parser.add_argument('--vis', type=bool, default=False, action='store_true')
     return parser.parse_args()
 
 if __name__ == '__main__':
