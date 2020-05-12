@@ -25,12 +25,12 @@ For more detail, please visit the repositories above.
   
  <span style="color:red">**Single 12GB GPU**</span>
 
-| Backbone  | Normalization  |mIoU in test |
-| :-------- | :------------: |:-----------:|
-| ResNet50  | Group-16       | 85.00%      |
-| ResNet101 | IGN-a-16       | 85.12%      |
-| ResNet101 | Group-16       | 85.33%      |
-| ResNet152 | Group-16       | 85.45%      |
+| Backbone  | Normalization  |mIoU in test | Parameters |
+| :-------- | :------------: |:-----------:|:-----------:|
+| ResNet50  | Group-16       | 85.00%      | [link](https://www.dropbox.com/s/5kdi0u8pf3ur9jd/resnet50.pth.tar?dl=0) |
+| ResNet101 | IGN-a-16       | 85.12%      | [link](https://www.dropbox.com/s/dw9hmcumrothvi9/ign101.pth.tar?dl=0) |
+| ResNet101 | Group-16       | 85.33%      | [link](https://www.dropbox.com/s/hzaxajxd17xep1b/resnet101.pth.tar?dl=0) |
+| ResNet152 | Group-16       | 85.45%      | [link](https://www.dropbox.com/s/himdmv7kso2usfj/resnet152.pth.tar?dl=0) |
 
 IGN-a-16 denotes instance group normalization with channel-grouping number 16, replacing BN of IBNNet-a with GN16.
 Group-16 denotes group normalization with channel-grouping number 16.
